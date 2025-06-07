@@ -1,54 +1,97 @@
-# React + TypeScript + Vite
+# 🧳 TravelEase
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+TravelEase is an AI-powered travel assistant webapp that automates trip planning and booking based on user preferences. It eliminates manual searching by learning user preferences and automatically finding and booking flights and accommodations.
 
-Currently, two official plugins are available:
+## 🌟 Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- **Smart Trip Planning**: AI-powered itinerary generation based on user preferences
+- **Automated Booking**: Automatic flight and hotel booking through integrated APIs
+- **Personalized Recommendations**: Learning-based system that adapts to user preferences
+- **Dynamic Pricing**: VPN proxy layer for finding the best prices across regions
+- **Real-time Updates**: Live tracking of prices and availability
 
-## Expanding the ESLint configuration
+## 🛠️ Tech Stack
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+### Frontend
+- React
+- TypeScript
+- Tailwind CSS
+- Vite
 
-```js
-export default tseslint.config({
-  extends: [
-    // Remove ...tseslint.configs.recommended and replace with this
-    ...tseslint.configs.recommendedTypeChecked,
-    // Alternatively, use this for stricter rules
-    ...tseslint.configs.strictTypeChecked,
-    // Optionally, add this for stylistic rules
-    ...tseslint.configs.stylisticTypeChecked,
-  ],
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
+### Backend
+- Python FastAPI
+- PostgreSQL
+- Redis (for caching)
+
+### APIs
+- Skyscanner API (Flights)
+- Hotels.com (Accommodation)
+- Mapbox API (Maps & Location)
+- Exchange Rates API (Currency)
+
+### Infrastructure
+- SmartProxy (VPN)
+- Redis (Caching)
+- Prometheus & Grafana (Monitoring)
+- ELK Stack (Logging)
+
+## 🚀 Getting Started
+
+### Prerequisites
+- Node.js (v18 or higher)
+- Python 3.12 or higher
+- PostgreSQL
+- Redis
+
+### Installation
+
+1. **Clone the repository**
+```bash
+git clone https://github.com/yourusername/travelease.git
+cd travelease
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
-
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default tseslint.config({
-  plugins: {
-    // Add the react-x and react-dom plugins
-    'react-x': reactX,
-    'react-dom': reactDom,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended typescript rules
-    ...reactX.configs['recommended-typescript'].rules,
-    ...reactDom.configs.recommended.rules,
-  },
-})
+2. **Frontend Setup**
+```bash
+cd frontend
+npm install
+npm run dev
 ```
+
+3. **Backend Setup**
+```bash
+cd backend
+python -m venv myenv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+pip install -r requirements.txt
+uvicorn app.main:app --reload
+```
+
+4. **Environment Setup**
+Create `.env` files in both frontend and backend directories with necessary API keys and configurations.
+
+## 📁 Project Structure
+
+```
+TravelEase/
+├── frontend/                 # React frontend
+│   ├── src/
+│   ├── public/
+│   └── package.json
+│
+├── backend/                  # Python backend
+│   ├── app/
+│   └── requirements.txt
+│
+└── docs/                     # Documentation
+```
+
+## 🔧 Development
+
+- Frontend runs on: `http://localhost:5173`
+- Backend API runs on: `http://localhost:8000`
+- API documentation: `http://localhost:8000/docs`
+
+## 📝 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
