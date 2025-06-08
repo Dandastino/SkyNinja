@@ -54,12 +54,10 @@ TravelEase is an AI-powered travel assistant webapp that automates trip planning
 git clone https://github.com/dandastino/travelease.git
 cd travelease
 ```
-
-3. **Run Backend, FrontEnd with Docker Compose**
+2. **Run Backend, FrontEnd with Docker Compose**
 ```bash
 docker compose up --build
 ```
-
 
 ## 📁 Project Structure
 
@@ -84,8 +82,7 @@ TravelEase/
 ## 🔧 Development
 
 - Frontend runs on: `http://localhost:5173`
-- Backend API runs on: `http://localhost:8000`
-- API documentation: `http://localhost:8000/docs`
+- Backend API runs on: `http://localhost:8001`
 
 ## 📝 License
 

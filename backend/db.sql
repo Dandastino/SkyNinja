@@ -79,7 +79,3 @@ CREATE TABLE accommodations(
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (trip_id) REFERENCES trips(id) ON DELETE CASCADE
 );
-
-
-INSERT INTO users (first_name, last_name, username, prefix ,phone_number, email, password_hash) 
-VALUES ('Moustafa', 'Sherif', 'Dandastino', '+47', '91259103', 'sherif.mustaa@gmail.com', 'firstpassword')
