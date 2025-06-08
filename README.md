@@ -23,6 +23,10 @@ TravelEase is an AI-powered travel assistant webapp that automates trip planning
 - PostgreSQL
 - Redis (for caching)
 
+### Container
+- docker
+- docker-compose
+
 ### APIs
 - Skyscanner API (Flights)
 - Hotels.com (Accommodation)
@@ -47,43 +51,34 @@ TravelEase is an AI-powered travel assistant webapp that automates trip planning
 
 1. **Clone the repository**
 ```bash
-git clone https://github.com/yourusername/travelease.git
+git clone https://github.com/dandastino/travelease.git
 cd travelease
 ```
 
-2. **Frontend Setup**
+3. **Run Backend, FrontEnd with Docker Compose**
 ```bash
-cd frontend
-npm install
-npm run dev
+docker compose up --build
 ```
 
-3. **Backend Setup**
-```bash
-cd backend
-python -m venv myenv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-pip install -r requirements.txt
-uvicorn app.main:app --reload
-```
-
-4. **Environment Setup**
-Create `.env` files in both frontend and backend directories with necessary API keys and configurations.
 
 ## 📁 Project Structure
 
 ```
 TravelEase/
-├── frontend/                 # React frontend
+├── frontend/                 
 │   ├── src/
 │   ├── public/
 │   └── package.json
 │
-├── backend/                  # Python backend
-│   ├── app/
-│   └── requirements.txt
-│
-└── docs/                     # Documentation
+├── backend/                
+    ├── app/
+        ├── main.py
+        └── db_connection.py
+    ├── Dockerfile
+    ├── db.sql
+    └── requirements.txt
+
+
 ```
 
 ## 🔧 Development
