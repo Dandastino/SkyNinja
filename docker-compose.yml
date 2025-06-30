@@ -1,19 +1,26 @@
 services:
+  nordvpn:
+    image: bubuntux/nordvpn
+    container_name: nordvpn
+    environment:
+      - TOKEN=${TOKEN}
+      - CONNECT=${NORDVPN_CONNECT}
+    cap_add:
+      - NET_ADMIN
+    restart: unless-stopped
   backend:
     build: 
       context: ./backend
       dockerfile: Dockerfile
-    ports:
-      - "8001:8000"
     environment:
       PYTHONUNBUFFERED: 1
       FLASK_ENV: development
-      DATABASE_URL: postgresql://user:password@db:5432/travelease
+      DATABASE_URL: postgresql://travelease:password@db:5432/travelease
     volumes:
       - ./backend:/app
+    network_mode: "service:nordvpn"
     depends_on:
       - db
-      - frontend
 
   frontend:
     build:
@@ -42,7 +49,7 @@ services:
     ports:
       - "5434:5432"
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U user -d mydatabase"]
+      test: ["CMD-SHELL", "pg_isready -U travelease -d travelease"]
       interval: 5s
       timeout: 5s
       retries: 5
