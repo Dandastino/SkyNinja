@@ -13,18 +13,42 @@ CREATE TABLE users (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+CREATE TABLE travel_styles (
+    id SERIAL PRIMARY KEY,
+    style_name VARCHAR(50) NOT NULL UNIQUE, -- e.g., 'adventure', 'relaxation', 'cultural', 'fun'
+);
+
+CREATE TABLE accomodation_types (
+    id SERIAL PRIMARY KEY,
+    type_name VARCHAR(50) NOT NULL UNIQUE -- e.g., 'hotel', 'hostel', 'apartment'
+);
+
+CREATE TABLE accompaniment_types (
+    id SERIAL PRIMARY KEY,
+    type_name VARCHAR(50) NOT NULL UNIQUE -- e.g., 'solo', 'couple', 'family', 'friends'
+);
+
+CREATE TABLE budget_ranges (
+    id SERIAL PRIMARY KEY,
+    range_name VARCHAR(50) NOT NULL UNIQUE -- e.g., 'poor', 'mid-range', 'luxury'
+);
+
+CREATE TABLE favorite_destinations (
+    id SERIAL PRIMARY KEY,
+    destination_name VARCHAR(100) NOT NULL UNIQUE -- e.g., 'Italy', 'Japan', 'Egypt'
+);
+
 -- what the user likes
 CREATE TABLE user_preferences (
     id SERIAL PRIMARY KEY,
-    user_id INT NOT NULL,
-    travel_style JSONB, -- e.g., 'adventure', 'relaxation', 'cultural', 'fun'
-    budget_range JSONB, -- e.g., 'poor', 'mid-range', 'luxury'
-    preferences_destinations JSONB, -- e.g., ['Italy', 'Japan', 'Egypt']
-    preferences_accommodations JSONB, -- e.g., ['hotel', 'hostel', 'apartment']
-    preferences_accompaniment JSONB, -- e.g., ['solo', 'couple', 'family', 'friends']
+    user_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    travel_style_id INT REFERENCES travel_styles(id) ON DELETE SET NULL,
+    accomodation_type_id INT REFERENCES accomodation_types(id) ON DELETE SET NULL,
+    accompaniment_type_id INT REFERENCES accompaniment_types(id) ON DELETE SET NULL,
+    budget_range_id INT REFERENCES budget_ranges(id) ON DELETE SET NULL,
+    favorite_destination_id INT REFERENCES favorite_destinations(id) ON DELETE SET NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
 -- The tips the user books or is booking / if the user wants can ask the gpt for an itinerary
