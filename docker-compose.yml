@@ -1,31 +1,91 @@
 services:
+  # NordVPN for regional price comparison
   nordvpn:
     image: bubuntux/nordvpn
-    container_name: nordvpn
+    container_name: skyninja-nordvpn
     environment:
-      - TOKEN=${TOKEN}
+      - TOKEN=${NORDVPN_TOKEN}
       - CONNECT=${NORDVPN_CONNECT}
     cap_add:
       - NET_ADMIN
     restart: unless-stopped
+    networks:
+      - skyninja-network
+
+  # PostgreSQL Database
+  db:
+    image: postgres:15-alpine
+    container_name: skyninja-db
+    env_file:
+      - .env
+    environment:
+      POSTGRES_USER: ${DB_USER:-skyninja}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-password}
+      POSTGRES_DB: ${DB_NAME:-skyninja}
+    volumes:
+      - db_data:/var/lib/postgresql/data
+      - ./backend/db.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - "5434:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-skyninja} -d ${DB_NAME:-skyninja}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - skyninja-network
+
+  # Redis for caching and session management
+  redis:
+    image: redis:7-alpine
+    container_name: skyninja-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    networks:
+      - skyninja-network
+
+  # SkyNinja Backend API
   backend:
     build: 
       context: ./backend
       dockerfile: Dockerfile
+    container_name: skyninja-backend
     environment:
       PYTHONUNBUFFERED: 1
-      FLASK_ENV: development
-      DATABASE_URL: postgresql://travelease:password@db:5432/travelease
+      DATABASE_URL: postgresql://${DB_USER:-skyninja}:${DB_PASSWORD:-password}@db:5432/${DB_NAME:-skyninja}
+      REDIS_URL: redis://redis:6379
+      SECRET_KEY: ${SECRET_KEY:-your-secret-key-here}
+      JWT_SECRET: ${JWT_SECRET:-your-jwt-secret-here}
+      SKYSCANNER_API_KEY: ${SKYSCANNER_API_KEY}
+      EXCHANGE_RATE_API_KEY: ${EXCHANGE_RATE_API_KEY}
+      NORDVPN_TOKEN: ${NORDVPN_TOKEN}
+      NORDVPN_CONNECT: ${NORDVPN_CONNECT}
     volumes:
       - ./backend:/app
-    network_mode: "service:nordvpn"
+    ports:
+      - "8000:8000"
     depends_on:
-      - db
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - skyninja-network
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
 
+  # SkyNinja Frontend
   frontend:
     build:
       context: ./frontend
       dockerfile: Dockerfile
+    container_name: skyninja-frontend
     ports:
       - "5173:5173"
     environment:
@@ -33,41 +93,105 @@ services:
     volumes:
       - ./frontend:/app
       - /app/node_modules
+    depends_on:
+      - backend
+    networks:
+      - skyninja-network
     command: npm run dev -- --host
 
-  db:
-    image: postgres:15-alpine
-    env_file:
-      - .env
-    environment:
-      POSTGRES_USER: ${DB_USER}
-      POSTGRES_PASSWORD: ${DB_PASSWORD}
-      POSTGRES_DB: ${DB_NAME}
-    volumes:
-      - db_data:/var/lib/postgresql/data
-      - ./database:/docker-entrypoint-initdb.d  
-    ports:
-      - "5434:5432"
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U travelease -d travelease"]
-      interval: 5s
-      timeout: 5s
-      retries: 5
-
+  # Elasticsearch for search and analytics
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:8.13.4
+    container_name: skyninja-elasticsearch
     environment:
       - discovery.type=single-node
+      - xpack.security.enabled=false
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
     ports:
       - "9200:9200"
+    volumes:
+      - elasticsearch_data:/usr/share/elasticsearch/data
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:9200/_cluster/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    networks:
+      - skyninja-network
 
+  # Kibana for monitoring and logging
   kibana:
     image: docker.elastic.co/kibana/kibana:8.13.4
+    container_name: skyninja-kibana
     ports:
       - "5601:5601"
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
     depends_on:
-      - elasticsearch
-      
+      elasticsearch:
+        condition: service_healthy
+    networks:
+      - skyninja-network
+
+  # Celery Worker for background tasks
+  celery-worker:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: skyninja-celery-worker
+    environment:
+      PYTHONUNBUFFERED: 1
+      DATABASE_URL: postgresql://${DB_USER:-skyninja}:${DB_PASSWORD:-password}@db:5432/${DB_NAME:-skyninja}
+      REDIS_URL: redis://redis:6379
+      SECRET_KEY: ${SECRET_KEY:-your-secret-key-here}
+      JWT_SECRET: ${JWT_SECRET:-your-jwt-secret-here}
+      SKYSCANNER_API_KEY: ${SKYSCANNER_API_KEY}
+      EXCHANGE_RATE_API_KEY: ${EXCHANGE_RATE_API_KEY}
+      NORDVPN_TOKEN: ${NORDVPN_TOKEN}
+      NORDVPN_CONNECT: ${NORDVPN_CONNECT}
+    volumes:
+      - ./backend:/app
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - skyninja-network
+    command: celery -A app.celery worker --loglevel=info
+
+  # Celery Beat for scheduled tasks
+  celery-beat:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: skyninja-celery-beat
+    environment:
+      PYTHONUNBUFFERED: 1
+      DATABASE_URL: postgresql://${DB_USER:-skyninja}:${DB_PASSWORD:-password}@db:5432/${DB_NAME:-skyninja}
+      REDIS_URL: redis://redis:6379
+      SECRET_KEY: ${SECRET_KEY:-your-secret-key-here}
+      JWT_SECRET: ${JWT_SECRET:-your-jwt-secret-here}
+      SKYSCANNER_API_KEY: ${SKYSCANNER_API_KEY}
+      EXCHANGE_RATE_API_KEY: ${EXCHANGE_RATE_API_KEY}
+      NORDVPN_TOKEN: ${NORDVPN_TOKEN}
+      NORDVPN_CONNECT: ${NORDVPN_CONNECT}
+    volumes:
+      - ./backend:/app
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - skyninja-network
+    command: celery -A app.celery beat --loglevel=info
+
+networks:
+  skyninja-network:
+    driver: bridge
+
 volumes:
   db_data:
-  postgres_data:
+  redis_data:
+  elasticsearch_data:

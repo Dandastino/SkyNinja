@@ -1,0 +1,71 @@
+services:
+  # PostgreSQL Database
+  db:
+    image: postgres:15-alpine
+    container_name: skyninja-db
+    environment:
+      POSTGRES_USER: skyninja
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: skyninja
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    ports:
+      - "5434:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U skyninja -d skyninja"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # Redis for caching
+  redis:
+    image: redis:7-alpine
+    container_name: skyninja-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+
+  # SkyNinja Backend API
+  backend:
+    build: 
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: skyninja-backend
+    environment:
+      PYTHONUNBUFFERED: 1
+      DATABASE_URL: postgresql://skyninja:password@db:5432/skyninja
+      REDIS_URL: redis://redis:6379
+      SECRET_KEY: your-super-secret-key-here
+      JWT_SECRET: your-jwt-secret-key-here
+    volumes:
+      - ./backend:/app
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+
+  # SkyNinja Frontend
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: skyninja-frontend
+    ports:
+      - "5173:5173"
+    environment:
+      VITE_API_URL: http://localhost:8000
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    depends_on:
+      - backend
+    command: npm run dev -- --host 0.0.0.0
+
+volumes:
+  db_data:
+  redis_data:

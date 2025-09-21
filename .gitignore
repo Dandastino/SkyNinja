@@ -84,3 +84,6 @@ Thumbs.db
 
 # Documentation
 docs/
+
+start.sh
+start.bat
