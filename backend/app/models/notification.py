@@ -4,7 +4,6 @@ from sqlalchemy.orm import relationship
 from ..database import Base
 import enum
 
-
 class NotificationType(enum.Enum):
     PRICE_DROP = "price_drop"
     PRICE_INCREASE = "price_increase"

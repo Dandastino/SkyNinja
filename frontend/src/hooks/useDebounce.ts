@@ -67,17 +67,14 @@ export function useApiDebounce<T>(
   delay: number = 1000
 ): T | null {
   const [result, setResult] = useState<T | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
 
   const debouncedDependencies = useDebounce(dependencies, delay);
 
   useEffect(() => {
     if (debouncedDependencies.length > 0 && debouncedDependencies.some(dep => dep !== undefined && dep !== '')) {
-      setIsLoading(true);
       apiCall()
         .then(setResult)
-        .catch(console.error)
-        .finally(() => setIsLoading(false));
+        .catch(console.error);
     }
   }, [debouncedDependencies, apiCall]);
 

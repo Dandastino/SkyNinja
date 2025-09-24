@@ -8,7 +8,6 @@ from ..services.notification_service import NotificationService
 from ..schemas.notification import (
     NotificationResponse,
     NotificationCreate,
-    NotificationUpdate,
     NotificationPreferences
 )
 

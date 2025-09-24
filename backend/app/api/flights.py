@@ -9,7 +9,6 @@ from ..services.price_prediction_service import PricePredictionService
 from ..schemas.flight import (
     FlightSearchRequest, 
     FlightResponse, 
-    FlightSearchResponse,
     PricePredictionRequest,
     PricePredictionResponse
 )

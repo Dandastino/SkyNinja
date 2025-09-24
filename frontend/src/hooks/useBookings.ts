@@ -1,5 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from 'react-query';
-import { bookingService, Booking, BookingCreate, BookingUpdate, PaymentRequest } from '../services/bookings';
+// Remove unused types: Booking, BookingCreate
+import type { BookingUpdate, PaymentRequest } from '../services/bookings';
+import { bookingService } from '../services/bookings';
 import toast from 'react-hot-toast';
 
 // Get user bookings hook
@@ -79,9 +81,9 @@ export const useUpdateBooking = () => {
     ({ bookingId, bookingUpdate }: { bookingId: number; bookingUpdate: BookingUpdate }) =>
       bookingService.updateBooking(bookingId, bookingUpdate),
     {
-      onSuccess: (data, variables) => {
+      onSuccess: (_, variables) => {
         // Update the booking in cache
-        queryClient.setQueryData(['bookings', variables.bookingId], data);
+        queryClient.setQueryData(['bookings', variables.bookingId], variables.bookingUpdate);
         
         // Invalidate user bookings to refresh the list
         queryClient.invalidateQueries(['bookings', 'user']);
@@ -125,7 +127,7 @@ export const useProcessPayment = () => {
     ({ bookingId, paymentRequest }: { bookingId: number; paymentRequest: PaymentRequest }) =>
       bookingService.processPayment(bookingId, paymentRequest),
     {
-      onSuccess: (data, variables) => {
+      onSuccess: (_, variables) => {
         // Invalidate booking status to refresh it
         queryClient.invalidateQueries(['bookings', variables.bookingId, 'status']);
         

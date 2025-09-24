@@ -4,7 +4,6 @@ from sqlalchemy.orm import relationship
 from ..database import Base
 import enum
 
-
 class BookingStatus(enum.Enum):
     PENDING = "pending"
     CONFIRMED = "confirmed"

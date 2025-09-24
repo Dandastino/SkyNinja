@@ -4,7 +4,6 @@ from sqlalchemy.orm import relationship
 from ..database import Base
 import enum
 
-
 class FlightType(enum.Enum):
     ONE_WAY = "one_way"
     ROUND_TRIP = "round_trip"

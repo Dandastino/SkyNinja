@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from 'react-query';
-import { flightService, FlightSearchRequest, Flight, PricePredictionRequest } from '../services/flights';
+import type { FlightSearchRequest, PricePredictionRequest } from '../services/flights';
+import { flightService } from '../services/flights';
 import toast from 'react-hot-toast';
 
 // Flight search hook

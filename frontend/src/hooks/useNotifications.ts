@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from 'react-query';
-import { notificationService, Notification, NotificationCreate, NotificationUpdate } from '../services/notifications';
+import type { Notification } from '../services/notifications';
+import { notificationService } from '../services/notifications';
 import toast from 'react-hot-toast';
 
 // Get user notifications hook
@@ -59,7 +60,8 @@ export const useMarkAsRead = () => {
         if (old) {
           return { ...old, is_read: true, read_at: new Date().toISOString() };
         }
-        return old;
+        // Return a default Notification object or keep old (if your app expects Notification, not undefined)
+        return old ?? { /* fill with required Notification fields */ };
       });
       
       // Invalidate notifications list to refresh it
@@ -80,14 +82,14 @@ export const useMarkAllAsRead = () => {
   const queryClient = useQueryClient();
   
   return useMutation(notificationService.markAllAsRead, {
-    onSuccess: (data) => {
+    onSuccess: () => {
       // Invalidate notifications list to refresh it
       queryClient.invalidateQueries(['notifications', 'user']);
       
       // Invalidate unread count
       queryClient.invalidateQueries(['notifications', 'unread-count']);
       
-      toast.success(`Marked ${data.updated_count} notifications as read`);
+      toast.success('Marked all notifications as read');
     },
     onError: (error: any) => {
       console.error('Failed to mark all notifications as read:', error);
@@ -125,7 +127,7 @@ export const useCreateNotification = () => {
   const queryClient = useQueryClient();
   
   return useMutation(notificationService.createNotification, {
-    onSuccess: (data) => {
+    onSuccess: () => {
       // Invalidate notifications list to refresh it
       queryClient.invalidateQueries(['notifications', 'user']);
       

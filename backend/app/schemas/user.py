@@ -1,9 +1,9 @@
 from pydantic import BaseModel, EmailStr
 from typing import Optional, List
 from datetime import datetime
-from ..models.booking import BookingStatus
-from ..models.notification import NotificationStatus
 
+from backend.app.schemas.booking import BookingResponse
+from backend.app.schemas.notification import NotificationResponse
 
 class UserBase(BaseModel):
     email: EmailStr
