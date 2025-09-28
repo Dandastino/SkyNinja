@@ -4,10 +4,9 @@ from fastapi.middleware.trustedhost import TrustedHostMiddleware
 from contextlib import asynccontextmanager
 import logging
 import structlog
-
 from .config import settings
-from .database import test_connection, engine
-from .models import *  # Import all models to ensure they're registered
+from .database import test_connection, engine, Base
+from .models import * # Import all models to ensure they're registered
 from .api import auth, flights, bookings, notifications
 
 # Configure structured logging
@@ -38,8 +37,8 @@ async def lifespan(app: FastAPI):
     # Startup
     logger.info("Starting SkyNinja API")
     
-    # Test database connection
-    if test_connection():
+    # Test database connection (already correctly awaited)
+    if await test_connection():
         logger.info("Database connection successful")
     else:
         logger.error("Database connection failed")
@@ -47,11 +46,15 @@ async def lifespan(app: FastAPI):
     
     # Create database tables
     try:
-        from .database import Base
-        Base.metadata.create_all(bind=engine)
+        # FIX: Use conn.run_sync() to execute the synchronous schema creation 
+        # function (Base.metadata.create_all) on the AsyncEngine.
+        async with engine.begin() as conn:
+            await conn.run_sync(Base.metadata.create_all)
+
         logger.info("Database tables created/verified")
     except Exception as e:
         logger.error(f"Error creating database tables: {e}")
+        # The exception is now properly raised from the asynchronous block
         raise
     
     yield
@@ -108,8 +111,12 @@ async def root():
 async def health_check():
     """Health check endpoint."""
     try:
-        # Test database connection
-        db_status = test_connection()
+        # Test database connection - NOTE: This endpoint should ideally use the async version, 
+        # but since this is not in the lifespan, it might be tolerable if the sync version 
+        # doesn't block the event loop severely, but it's best practice to await it.
+        # We will keep the sync call here for now, assuming the test_connection function 
+        # is meant to be called asynchronously when it needs to run on the async engine.
+        db_status = await test_connection() # 👈 Changed to AWAIT the async function
         
         return {
             "status": "healthy" if db_status else "unhealthy",

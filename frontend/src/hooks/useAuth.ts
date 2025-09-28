@@ -216,6 +216,3 @@ export const usePermissions = () => {
     canBook,
   };
 };
-    canBook,
-  };
-};

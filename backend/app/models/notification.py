@@ -57,7 +57,7 @@ class Notification(Base):
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
     
     # Additional data
-    metadata = Column(Text, nullable=True)  # JSON string for additional data
+    extra_metadata = Column(Text, nullable=True)  # JSON string for additional data
     
     # Relationships
     user = relationship("User", back_populates="notifications")

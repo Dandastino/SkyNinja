@@ -27,7 +27,7 @@ class NotificationService:
                 related_booking_id=notification_data.related_booking_id,
                 related_flight_id=notification_data.related_flight_id,
                 related_search_id=notification_data.related_search_id,
-                metadata=json.dumps(notification_data.metadata) if notification_data.metadata else None
+                extra_metadata=json.dumps(notification_data.metadata) if notification_data.metadata else None
             )
             
             db.add(notification)
@@ -122,7 +122,7 @@ class NotificationService:
             notification_type=NotificationType.PRICE_DROP,
             priority=2,  # High priority
             related_flight_id=flight_id,
-            metadata={
+            extra_metadata={
                 "old_price": old_price,
                 "new_price": new_price,
                 "price_drop_percent": price_drop_percent
@@ -140,7 +140,7 @@ class NotificationService:
             notification_type=NotificationType.BOOKING_CONFIRMATION,
             priority=3,  # Highest priority
             related_booking_id=booking_id,
-            metadata={
+            extra_metadata={
                 "booking_reference": booking_reference
             }
         )
@@ -168,7 +168,7 @@ class NotificationService:
             notification_type=NotificationType.FLIGHT_REMINDER,
             priority=2,
             related_flight_id=flight_id,
-            metadata={
+            extra_metadata={
                 "departure_time": departure_time.isoformat(),
                 "hours_until_departure": hours_until_departure
             }

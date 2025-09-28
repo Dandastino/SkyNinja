@@ -5,7 +5,7 @@ import os
 
 class Settings(BaseSettings):
     # Database
-    database_url: str = os.getenv("DATABASE_URL", "postgresql://skyninja:password@localhost:5434/skyninja")
+    database_url: str = os.getenv("DATABASE_URL", "postgresql+asyncpg://skyninja:password@localhost:5432/skyninja")
     
     # Security
     secret_key: str = os.getenv("SECRET_KEY", "your-secret-key-here")
